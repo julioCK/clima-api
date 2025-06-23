@@ -5,7 +5,7 @@
   <groupId>org.example</groupId>
   <artifactId>clima-api</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <packaging>war</packaging>
 
   <name>clima-api</name>
   <url>http://maven.apache.org</url>
@@ -23,6 +23,13 @@
       <artifactId>junit</artifactId>
       <version>3.8.1</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>5.0.0</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Cliente HTTP moderno -->
@@ -59,7 +66,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.juliock.Program.Main</mainClass>
+              <mainClass>com.juliock.Main</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
@@ -75,6 +82,13 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+
+      <!-- plugin para o maven empacotar como .war (web application archive) que é o formato padrão para distribuir aplicações java web-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.4.0</version>
       </plugin>
 
     </plugins>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         version="4.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                             http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd">
+
+    <!-- Declara o servlet -->
+    <servlet>
+        <servlet-name>ClimaServlet</servlet-name>
+        <servlet-class>com.juliock.servlet.ClimaServlet</servlet-class>
+    </servlet>
+
+    <!-- Mapeia uma URL para o servlet -->
+    <servlet-mapping>
+        <servlet-name>ClimaServlet</servlet-name>
+        <url-pattern>/clima</url-pattern>
+    </servlet-mapping>
+
+</web-app>
