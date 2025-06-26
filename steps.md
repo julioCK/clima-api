@@ -119,3 +119,20 @@ Como daqui pra frente vamos utilizar o Tomcat, precisamos providenciar servlets 
     </servlet-mapping>
 
 ```
+---
+## Step 3:
+
+  - Testar uma requisiçao à API do Visual Crossing.
+  - Para enviar essa requisição, será usada a biblioteca `httpclient5` da Apache.
+
+>Essa biblioteca permite, entre outras coisas:
+>
+>✅ Enviar requisições HTTP (GET, POST, PUT, DELETE, etc.) <br/>
+>✅ Adicionar cabeçalhos (headers) <br/>
+>✅ Incluir parâmetros e corpo da requisição <br/>
+>✅ Tratar respostas (status, corpo da resposta, erros) <br/>
+<br/>
+  - URL base : https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/
+    - Endpoints da API Visual Crossing: 
+      - /timeline/`location` – forecast queries.
+      - /timeline/`location`/`date1`/`date2` – queries for a specific date range.

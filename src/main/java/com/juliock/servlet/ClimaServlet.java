@@ -32,6 +32,7 @@ public class ClimaServlet extends HttpServlet {
         }
         String result = climaService.search(cidade);
 
+
         /* RESPOSTA */
 
         // Configura o tipo da resposta
@@ -45,7 +46,7 @@ public class ClimaServlet extends HttpServlet {
     }
 
     //esse metodo vai retornar os query params do requisição em um mapa
-    private Map<String, String> parseQueryParams(String query) {
+    /* private Map<String, String> parseQueryParams(String query) {
         // String query = "http://localhost:8080/clima?cidade=Campinas&unidade=celsius";
 
         String sub = query.substring(query.indexOf("?") + 1);
@@ -67,5 +68,5 @@ public class ClimaServlet extends HttpServlet {
             }
         }
         return m;
-    }
+    }*/
 }
