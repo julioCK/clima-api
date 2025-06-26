@@ -17,7 +17,7 @@ Esse servidor vai:
 - devolve a resposta fornecida pela lógica contida na aplicação para o cliente.
 
 ---
-## Step 1:
+## Step 1: 
 
 Pra começar 
 
@@ -123,7 +123,7 @@ Como daqui pra frente vamos utilizar o Tomcat, precisamos providenciar servlets 
 ## Step 3:
 
   - Testar uma requisiçao à API do Visual Crossing.
-  - Para enviar essa requisição, será usada a biblioteca `httpclient5` da Apache.
+  - Para enviar essa requisição será usada a biblioteca `httpclient5` da Apache.
 
 >Essa biblioteca permite, entre outras coisas:
 >
@@ -136,3 +136,34 @@ Como daqui pra frente vamos utilizar o Tomcat, precisamos providenciar servlets 
     - Endpoints da API Visual Crossing: 
       - /timeline/`location` – forecast queries.
       - /timeline/`location`/`date1`/`date2` – queries for a specific date range.
+
+---
+## Estado atual:
+✅ Um servlet (`ClimaServlet`) servindo a rota `/clima`;<br/>
+✅ Uma classe de serviço (`ClimaService`) que consulta dados reais da Visual Crossing Weather API;<br/>
+✅ Projeto empacotado como `.war`, rodando dentro de um container Docker com Tomcat;<br/>
+✅ Retorno de String JSON cru vindo da API externa para o cliente.
+<br/><br/>
+---
+## Step 4:
+
+  - Implementar classes DTO para representar os dados vindos a API externa;
+    - A resposta da API externa é uma String JSON.
+    - A biblioteca <ins>Jackson</ins> vai extrair os dados JSON e instanciar essas classes.
+    - Escolhemos os dados que queremos da resposta da API e criamos as classes com campos com os mesmos nomes dos campos do JSON.
+    - Todos os campos devem ter getters e setters e as classes devem ter um construtor padrão vazio.
+  - Desserializar:  JSON -> Objeto Java
+  - Serializar:     Objeto Java -> JSON
+  - Enviar String JSON como resposta.
+### Jackson
+ - O `ObjectMapper` é a principal classe da biblioteca Jackson para trabalhar com JSON em Java. Ele fornece métodos para serializar (converter objeto → JSON) e desserializar (converter JSON → objeto).
+ - Principais métodos:
+
+| Método                          | Para que serve                                                  |
+| ------------------------------- | --------------------------------------------------------------- |
+| `readValue(json, Classe.class)` | JSON → Objeto Java                                              |
+| `writeValueAsString(objeto)`    | Objeto Java → String JSON                                       |
+| `writeValue(File, objeto)`      | Objeto Java → JSON em arquivo                                   |
+| `registerModule(modulo)`        | Ativa suporte extra (ex: datas do Java 8)                       |
+| `configure(...)`                | Ativa/desativa comportamentos (ex: falha em campo desconhecido) |
+---

@@ -1,5 +1,7 @@
 package com.juliock.servlet;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.juliock.dto.WeatherApiResponseDTO;
 import com.juliock.services.ClimaService;
 
 import jakarta.servlet.ServletException;
@@ -9,9 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+
 
 
 public class ClimaServlet extends HttpServlet {
@@ -30,8 +30,8 @@ public class ClimaServlet extends HttpServlet {
         if(cidade == null || cidade.isBlank()) {
             cidade = "unknown";
         }
-        String result = climaService.search(cidade);
 
+        WeatherApiResponseDTO weatherApiResponseDTO = climaService.search(cidade);
 
         /* RESPOSTA */
 
@@ -39,9 +39,13 @@ public class ClimaServlet extends HttpServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
+        //Serializar o objeto de novo para JSON
+        ObjectMapper mapper = new ObjectMapper();
+        String responseJson = mapper.writeValueAsString(weatherApiResponseDTO);
+
         // Escreve a resposta no corpo
         PrintWriter out = response.getWriter();
-        out.print(result);
+        out.print(responseJson);
         out.flush();
     }
 

@@ -1,6 +1,7 @@
 package com.juliock.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.juliock.dto.WeatherApiResponseDTO;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -17,7 +18,7 @@ public class ClimaService {
     private final String API_KEY = "RDG44J4HGGC7JHJYA5TZARFPK";
     private final String API_BASE_URL = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/";
 
-    public String search(String cidade) throws IOException {
+    public WeatherApiResponseDTO search(String cidade) throws IOException {
         String testRequest = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/Campinas/today?unitGroup=metric&elements=datetime%2Cname%2Ctempmax%2Ctempmin%2Ctemp%2Cfeelslike%2Cprecip%2Cprecipprob&include=hours%2Cfcst%2Cremote%2Cobs%2Cstats&key=RDG44J4HGGC7JHJYA5TZARFPK&options=useobs&contentType=json";
 
         // a biblioteca Apache httpclient5 vai permitir realizar requisições http para a API externa.
@@ -45,6 +46,11 @@ public class ClimaService {
             }
         });
 
-        return responseStr;
+        /*  A classe ObjectMapper é a principal da lib Jackson, ela será responsável por desserializar o JSON e instanciar as
+         *   classes correspondentes.
+        * */
+        ObjectMapper mapper = new ObjectMapper();
+        WeatherApiResponseDTO weatherApiResponseDTO = mapper.readValue(responseStr, WeatherApiResponseDTO.class);
+        return weatherApiResponseDTO;
     }
 }
