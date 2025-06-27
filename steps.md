@@ -63,11 +63,15 @@ Agora vamos mudar do servidor Http embutido do java para o **Apache Tomcat** sep
 
 > **Servlet**
 > 
-> É uma classe Java que implementa a interface javax.servlet.Servlet e é responsável por processar
+> É uma classe Java que herda de `jakarta.servlet.http.HttpServlet` e é responsável por processar
 > e tratar **requisições Http** em aplicações web Java.
 > 
 > Elas funcionam como módulos do lado do servidor que processam requisições, executam lógica (acessam
 > banco de dados, geram HTML, etc) e **retornam uma resposta**.
+> 
+> É boa prática que o Servlet atue como **Controller**, 
+> delegando a lógica de negócio para outras classes. 
+> Isso promove separação de responsabilidades, testabilidade e manutenibilidade do código.
 
 > **Tomcat**
 >
@@ -167,3 +171,49 @@ Como daqui pra frente vamos utilizar o Tomcat, precisamos providenciar servlets 
 | `registerModule(modulo)`        | Ativa suporte extra (ex: datas do Java 8)                       |
 | `configure(...)`                | Ativa/desativa comportamentos (ex: falha em campo desconhecido) |
 ---
+## Step 5:
+
+Para que a API Java fique mais eficiente evitando chamadas repetidas e lentas à API externa (Visual Crossing Weather).
+
+Sem Redis:<br/>
+- Toda requisição para sua API → chama Visual Crossing → traz os dados → devolve.<br/>
+- Mesmo que o usuário pergunte mil vezes a mesma previsão, você paga latência e custo da API externa sempre.
+
+Com Redis:<br/>
+
+- Sua API pergunta pro Redis: “Já tenho essa previsão?”<br/>
+✅ Se sim, devolve instantaneamente (em memória, super rápido).<br/>
+❌ Se não, consulta a Visual Crossing, salva o resultado no Redis e devolve.
+
+
+#### Fluxo basico da aplicação com Redis:
+
+[Cliente HTTP]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
+[Servlet / Controller]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
+[ClimaService]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
+[Consulta Redis]<── Já tem? ──✔── Resultado<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
+Não tem<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
+[Chama Visual Crossing]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
+[Armazena em Redis (com TTL)]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
+[Retorna para cliente]<br/>
+<br/>
+#### O código Java vai precisar:
+
+✅ Conectar ao servidor Redis (hostname, porta)<br/>
+✅ Consultar se a chave existe (GET)<br/>
+✅ Salvar se não existir (SET com EXPIRE)<br/>
+✅ Transformar JSON para objeto (usando Jackson, como já faz)<br/>
+
+#### Implementar o **Redis** para atuar como cache das chamadas à API visual crossing.
+  - #1: subir um container docker com o redis: `docker run --name redis-clima -p 6379:6379 -d redis`
+  - #2: Para a aplicação Java se conectar com o Redis, precisamos de um cliente Redis para o Java: **Jedis**.
+  - #3: Criar uma classe de serviço para encapsular o acesso do aplicativo ao Redis: `RedisCacheService` 
+
+
