@@ -216,4 +216,14 @@ Não tem<br/>
   - #2: Para a aplicação Java se conectar com o Redis, precisamos de um cliente Redis para o Java: **Jedis**.
   - #3: Criar uma classe de serviço para encapsular o acesso do aplicativo ao Redis: `RedisCacheService` 
 
+---
+## Step 6:
+- <ins>Tratamento de exceções</ins>:
+A API externa envia mensagens sobre eventuais erros no corpo da resposta. O ideal é capturar essas
+mensagens e exibir para o usuário. Também temos que tratar com mais especificidade os principais
+status code de erro.<br/><br/>
 
+    - **#1**: Criar uma exception personalizada para os erros: `ApiCallException`;
+      - Essa Exception vai conter o status code e a mensagem que a API da visual crossing devolve;
+      - O corpo da resposta, no caso de erro, é texto puro (String).
+    - **#2**: Refatorar `ClimaService` e `ClimaServlet`.

@@ -2,6 +2,7 @@ package com.juliock.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.juliock.dto.WeatherApiResponseDTO;
+import com.juliock.exceptions.ApiCallException;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -13,22 +14,23 @@ import java.nio.charset.StandardCharsets;
 
 
 public class ClimaService {
-                                                                                        // 172.17.0.2 é o IP do container do redis
-    private final RedisCacheService redisCacheService = new RedisCacheService("172.17.0.3", 6379);
+                                                                                        // 172.17.0.1 é o IP do container do redis
+    private final RedisCacheService redisCacheService = new RedisCacheService("172.17.0.1", 6379);
     private final int CACHE_TTL_SECONDS = 3600;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final String API_KEY = "RDG44J4HGGC7JHJYA5TZARFPK";
-    private final String API_BASE_URL = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/";
-    private final String UNIT_GROUP = "metric";
+    // --- API URL ---
+    private static final String API_KEY = "RDG44J4HGGC7JHJYA5TZARFPK";
+    private static final String API_BASE_URL = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/";
+    private static final String UNIT_GROUP = "metric";
     private static final String ELEMENTS = String.join(",", "datetime","name","tempmax","tempmin","temp","feelslike","precip","precipprob");
     private static final String INCLUDE = String.join(",", "hours","fcst","remote","obs","stats");
-    private final String OPTIONS = "useobs";
-    private final String CONTENT_TYPE = "json";
+    private static final String OPTIONS = "useobs";
+    private static final String CONTENT_TYPE = "json";
+    // --- ! ---
 
-
-    public WeatherApiResponseDTO search(String cidade) throws IOException {
+    public WeatherApiResponseDTO search(String cidade) throws IOException, ApiCallException {
 
         /* Antes de fazer uma chamada à API Visual Crossing, verificar se não existe uma key registrada no Redis que está
         *  associada à consulta.
@@ -50,20 +52,23 @@ public class ClimaService {
 
             // ----- Criar uma requisição GET -----
             String requestUrl = buildURL(cidade.toLowerCase(), "today");
+            System.out.println(requestUrl); // exibe URL no log do servidor
             HttpGet request = new HttpGet(requestUrl);
 
             // ----- Enviar a requisição Get, receber a RESPOSTA e converte-la em String atribuindo à variavel responseStr -----
-                /* o metodo HttpClient.execute() recebe como argumentos a requisição e um implementação da interface funcional
-                   HttpClientResponseHandler. A função lambda abaixo implementa o unico metodo dessa interface. */
-             responseStr = client.execute(request, response -> {
+            /* o metodo HttpClient.execute() recebe como argumentos a requisição e um implementação da interface funcional
+               HttpClientResponseHandler. A função lambda passada como parametro abaixo implementa o unico metodo dessa interface. */
 
-                int status = response.getCode(); // Cod HTTP
-                if (status >= 200 && status < 300) {
-                    return EntityUtils.toString(response.getEntity()); // getEntity() le o corpo da resposta e EntityUtils.toString converte para String
-                } else {
-                    throw new RuntimeException("Erro http: " + status);
-                }
-            });
+             responseStr = client.execute(request, response -> {
+                 int status = response.getCode(); // Cod HTTP
+                 String responseBody = EntityUtils.toString(response.getEntity()); // getEntity() le o corpo da resposta e EntityUtils.toString converte para String
+
+                 if (status >= 200 && status < 300) {
+                     return responseBody;
+                 } else {
+                     throw new ApiCallException(status, responseBody); // se der algum erro na chamada, o status code e a mensagem do corpo do http retornado pela api vao ser registradas nessa exception.
+                 }
+             });
 
              // ----- Salvar a resposta da API no Redis por 1h (3600 seg); -----
             redisCacheService.set(cacheKey, responseStr, CACHE_TTL_SECONDS);
