@@ -8,26 +8,33 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 
 public class ClimaService {
                                                                                         // 172.17.0.2 é o IP do container do redis
-    private final RedisCacheService redisCacheService = new RedisCacheService("172.17.0.2", 6379);
+    private final RedisCacheService redisCacheService = new RedisCacheService("172.17.0.3", 6379);
     private final int CACHE_TTL_SECONDS = 3600;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final String API_KEY = "RDG44J4HGGC7JHJYA5TZARFPK";
     private final String API_BASE_URL = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/";
+    private final String UNIT_GROUP = "metric";
+    private static final String ELEMENTS = String.join(",", "datetime","name","tempmax","tempmin","temp","feelslike","precip","precipprob");
+    private static final String INCLUDE = String.join(",", "hours","fcst","remote","obs","stats");
+    private final String OPTIONS = "useobs";
+    private final String CONTENT_TYPE = "json";
+
 
     public WeatherApiResponseDTO search(String cidade) throws IOException {
-        String testRequest = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/Campinas/today?unitGroup=metric&elements=datetime%2Cname%2Ctempmax%2Ctempmin%2Ctemp%2Cfeelslike%2Cprecip%2Cprecipprob&include=hours%2Cfcst%2Cremote%2Cobs%2Cstats&key=RDG44J4HGGC7JHJYA5TZARFPK&options=useobs&contentType=json";
 
         /* Antes de fazer uma chamada à API Visual Crossing, verificar se não existe uma key registrada no Redis que está
         *  associada à consulta.
         *  Os dados salvos no redis terão sempre uma key com o mesmo nome da cidade. */
 
-        String cacheKey = cidade;
+        String cacheKey = cidade.toLowerCase(); // a key que será consultada no redis é o nome da cidade.
         String cachedJSON = redisCacheService.get(cacheKey);
 
         String responseStr = "";
@@ -42,7 +49,8 @@ public class ClimaService {
             HttpClient client = HttpClients.createDefault();
 
             // ----- Criar uma requisição GET -----
-            HttpGet request = new HttpGet(testRequest);
+            String requestUrl = buildURL(cidade.toLowerCase(), "today");
+            HttpGet request = new HttpGet(requestUrl);
 
             // ----- Enviar a requisição Get, receber a RESPOSTA e converte-la em String atribuindo à variavel responseStr -----
                 /* o metodo HttpClient.execute() recebe como argumentos a requisição e um implementação da interface funcional
@@ -72,5 +80,19 @@ public class ClimaService {
         WeatherApiResponseDTO weatherApiResponseDTO = objectMapper.readValue(responseStr, WeatherApiResponseDTO.class);
 
         return weatherApiResponseDTO;
+    }
+
+    private String buildURL(String cidade, String date) {
+        String endPoint = String.join("/", cidade, date);
+
+        return String.format("%s%s?unitGroup=%s&elements=%s&include=%s&key=%s&options=%s&contentType=%s",
+                API_BASE_URL,
+                endPoint,
+                UNIT_GROUP,
+                URLEncoder.encode(ELEMENTS, StandardCharsets.UTF_8), // garantir que a "," que separa os termos seja codificada como "%2C"
+                URLEncoder.encode(INCLUDE, StandardCharsets.UTF_8), // garantir que a "," que separa os termos seja codificada como "%2C"
+                API_KEY,
+                OPTIONS,
+                CONTENT_TYPE);
     }
 }
