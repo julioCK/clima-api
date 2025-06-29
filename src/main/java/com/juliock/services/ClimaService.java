@@ -8,8 +8,6 @@ import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -19,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 public class ClimaService {
 
     // --- Redis ---                                                                                         // 172.17.0.1 é o IP do container do redis
-    private final RedisCacheService redisCacheService = new RedisCacheService("172.17.0.1", 6379);
+    private final RedisCacheService redisCacheService = new RedisCacheService("172.17.0.3", 6379);
     private final int CACHE_TTL_SECONDS = 3600;
 
     // --- Jackson ---
@@ -39,7 +37,6 @@ public class ClimaService {
 
         /* Antes de fazer uma chamada à API Visual Crossing, verificar se não existe uma key registrada no Redis que está associada à consulta.
             - Os dados salvos no redis terão sempre uma key com o mesmo nome da cidade. */
-
         String cacheKey = cidade.toLowerCase(); // a key que será consultada no redis é o nome da cidade.
         String cachedJSON = redisCacheService.get(cacheKey);
 
@@ -126,7 +123,7 @@ public class ClimaService {
         int hourWindow = 3600; // 1h
 
         long currentUserRequests = redisCacheService.incrementCounter(userIpKey, hourWindow);
-        if(currentRequests > userIpLimit) {
+        if(currentUserRequests > userIpLimit) {
             throw new ApiRequestLimitReachedException("Hourly limit exceeded for this client. Please wait before making more requests.");
         }
     }
