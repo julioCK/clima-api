@@ -35,6 +35,20 @@ public class RedisCacheService {
         }
     }
 
+    /* antes de seguir com a chamada à API, temos que verificar se 2 limites não foram atingidos:
+          - Limite de 10 requests/hora por IP de usuário;
+          - Limite de 1000 chamadas globais por dia;
+       O registro desses limites ficarão gravados no servidor Redis e serão atualizados com auxílio da função RedisCacheService.incrementCounter() */
+    public Long incrementCounter(String key, int expireSeconds) {
+        try(Jedis jedis = jedisPool.getResource()) {
+            Long count = jedis.incr(key);  // incrementa 1 no valor associado à chave fornecida como parametro. Se essa chave nao existir: cria a chave com o valor 0 e incrementa 1.
+            if(count == 1) {    // Quer dizer: se a chave nao exisia e foi criada na linha acima. Isso indica que é o primeiro request à API VCrossing em determinado período...
+                jedis.expire(key, expireSeconds); // a partir de agora as request estão sendo contadas (10 requests por hora para cada IP / 1000 requests por dia global)
+            }
+            return count;
+        }
+    }
+
     public void close() {
         jedisPool.close();
     }

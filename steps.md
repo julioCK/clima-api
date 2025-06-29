@@ -227,3 +227,9 @@ status code de erro.<br/><br/>
       - Essa Exception vai conter o status code e a mensagem que a API da visual crossing devolve;
       - O corpo da resposta, no caso de erro, é texto puro (String).
     - **#2**: Refatorar `ClimaService` e `ClimaServlet`.
+
+---
+### Step 7: 
+ - Limitar a quantidade de requests à API do Virtual Crossing. Serão 2 tipos de limite
+   - Limite total diário de 1000 chamadas;
+   - Limite por ip de usuário/hora de 10 chamadas;

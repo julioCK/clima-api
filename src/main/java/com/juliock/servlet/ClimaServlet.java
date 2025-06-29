@@ -3,6 +3,7 @@ package com.juliock.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.juliock.dto.WeatherApiResponseDTO;
 import com.juliock.exceptions.ApiCallException;
+import com.juliock.exceptions.ApiRequestLimitReachedException;
 import com.juliock.services.ClimaService;
 
 import jakarta.servlet.ServletException;
@@ -21,11 +22,9 @@ public class ClimaServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        /*  o metodo doGet() será chamado pelo servidor para requisições GET    */
-
-        // HttpServletRequest é uma interface que preve funcionalidades específicas para processar uma request Http
-        // HttpServletResponse de forma semelhante, preve funcionalidades para processar uma response Http
-
+        /*  o metodo doGet() será chamado pelo servidor para requisições GET;
+                - HttpServletRequest é uma interface que preve funcionalidades específicas para processar uma request Http;
+                - HttpServletResponse de forma semelhante, preve funcionalidades para processar uma response Http;  */
 
         String cidade = request.getParameter("cidade");
         if(cidade == null || cidade.isBlank()) {
@@ -38,7 +37,10 @@ public class ClimaServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         try {
-            WeatherApiResponseDTO weatherApiResponseDTO = climaService.search(cidade);
+            String clientID = request.getRemoteAddr();
+
+            WeatherApiResponseDTO weatherApiResponseDTO = climaService.search(cidade, clientID);
+            response.setStatus(HttpServletResponse.SC_OK); // seta o status code da resposta para 200 OK
 
             //Serializar o objeto de novo para JSON
             ObjectMapper mapper = new ObjectMapper();
@@ -50,8 +52,12 @@ public class ClimaServlet extends HttpServlet {
             out.flush();
         }
         catch(ApiCallException ace) {
-            PrintWriter out = response.getWriter();
-            out.print("Erro: Status " + ace.getStatusCode() + " - " + ace.getApiMessage());
+            response.setStatus(ace.getStatusCode());
+            response.getWriter().write("Erro: Status " + ace.getStatusCode() + " - " + ace.getApiMessage());
+        }
+        catch(ApiRequestLimitReachedException e) {
+            response.setStatus(429);
+            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
         }
     }
 }
