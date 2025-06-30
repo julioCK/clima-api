@@ -188,22 +188,24 @@ Com Redis:<br/>
 
 #### Fluxo basico da aplicação com Redis:
 
-[Cliente HTTP]<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
-[Servlet / Controller]<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
-[ClimaService]<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
-[Consulta Redis]<── Já tem? ──✔── Resultado<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
-Não tem<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
-[Chama Visual Crossing]<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
-[Armazena em Redis (com TTL)]<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
-[Retorna para cliente]<br/>
-<br/>
+```csharp
+[HTTP Client]
+    ↓
+[Servlet / Controller]
+    ↓
+[ClimaService]
+    ↓
+[Check Redis] <── Already there? ──✔── Result
+    ↓
+Not there
+    ↓
+[Call Visual Crossing]
+    ↓
+[Store in Redis (with TTL)]
+    ↓
+[Return to Client]
+
+```
 #### O código Java vai precisar:
 
 ✅ Conectar ao servidor Redis (hostname, porta)<br/>
