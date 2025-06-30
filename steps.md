@@ -229,7 +229,15 @@ status code de erro.<br/><br/>
     - **#2**: Refatorar `ClimaService` e `ClimaServlet`.
 
 ---
-### Step 7: 
+## Step 7: 
  - Limitar a quantidade de requests à API do Virtual Crossing. Serão 2 tipos de limite
    - Limite total diário de 1000 chamadas;
    - Limite por ip de usuário/hora de 10 chamadas;
+---
+## Step 8:
+ - Rodar a aplicação com **Docker-Compose**;
+   - Empacotar a aplicação no formato `.war` com `> mvn clean package`;
+   - Criar o arquivo `Dockerfile` na raíz da aplicação;
+     - *esse arquivo vai conter instruções para subir um container tomcat com a aplicação dentro;
+   - Criar o arquivo `docker-compose.yml` para definir os serviços que vão rodar (container) e a relação entre eles;
+   - Build e execução: `docker-compose up --build` (no diretório raíz).

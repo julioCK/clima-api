@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+
+  redis: # nome do serviço
+    image: redis:8 # Imagem oficial do Redis
+    container_name: redis-clima # Nome do container
+    ports: # Portas expostas
+      - "6379:6379"
+    restart: unless-stopped
+
+  clima-api: # nome do serviço
+    build: . # buildar usando o arquivo Dockerfile contido na raiz do projeto
+    container_name: clima-api
+    depends_on:
+      - redis
+    ports:
+      - "8080:8080"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    # Docker Compose cria uma rede interna para os serviços;
+    # Containers nessa rede se acessam usando o nome do serviço;
+    # Não precisa de IP fixo ou capturado manualmente.

@@ -16,8 +16,10 @@ import java.nio.charset.StandardCharsets;
 
 public class ClimaService {
 
-    // --- Redis ---                                                                                         // 172.17.0.1 é o IP do container do redis
-    private final RedisCacheService redisCacheService = new RedisCacheService("172.17.0.3", 6379);
+    // --- Redis ---
+    String redisHost = System.getenv().getOrDefault("REDIS_HOST", "localhost"); // controlar o endereço do host Redis pela variável de ambiente "REDIS_HOST" no docker compose
+    int redisPort = Integer.parseInt(System.getenv().getOrDefault("REDIS_PORT", "6379")); // controlar o endereço da port Redis pela variável de ambient "REDIS_PORT" no docker compose
+    private final RedisCacheService redisCacheService = new RedisCacheService(redisHost, redisPort);
     private final int CACHE_TTL_SECONDS = 3600;
 
     // --- Jackson ---
@@ -90,6 +92,7 @@ public class ClimaService {
 
         return weatherApiResponseDTO;
     }
+
         // --- Metodo para construir a request URL para a API Visual Crossing ---
     private String buildURL(String cidade, String date) {
         String endPoint = String.join("/", cidade, date);
